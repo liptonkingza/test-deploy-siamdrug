@@ -25,28 +25,21 @@ const dashboardRouter = require('./routes/dashboard');
 
 const app = express();
 
-// Base path configuration for subdirectory deployment
-const BASE_PATH = process.env.BASE_PATH || '';
-
 // View engine: EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Static files - serve from base path if configured
-if (BASE_PATH) {
-  app.use(BASE_PATH, express.static(path.join(__dirname, 'public')));
-} else {
-  app.use(express.static(path.join(__dirname, 'public')));
-}
+// Static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve CSV export mapping summary file
 app.get('/CSV_EXPORT_MAPPING_SUMMARY.md', (req, res) => {
   const filePath = path.join(__dirname, 'CSV_EXPORT_MAPPING_SUMMARY.md');
-
+  
   // Set headers to force download with correct content type
   res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="CSV_EXPORT_MAPPING_SUMMARY.md"');
-
+  
   // Send file with error handling
   res.sendFile(filePath, (err) => {
     if (err) {
@@ -65,8 +58,8 @@ const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'change_this_dev_secret',
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
+  cookie: { 
+    httpOnly: true, 
     secure: false, // Set to false for Railway deployment
     maxAge: 1000 * 60 * 60 * 24, // 24 hours
     sameSite: 'lax' // Add sameSite for better compatibility
@@ -91,13 +84,12 @@ app.use(session(sessionConfig));
 // Expose current user and error messages to views
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
-  res.locals.basePath = BASE_PATH;
-
+  
   // Pass error message from query string to views
   if (req.query.error) {
     res.locals.error = req.query.error;
   }
-
+  
   // Debug logging for session issues
   if (process.env.NODE_ENV === 'production') {
     console.log('🔍 Session debug:', {
@@ -108,7 +100,7 @@ app.use((req, res, next) => {
       method: req.method
     });
   }
-
+  
   next();
 });
 
@@ -136,8 +128,8 @@ app.get('/health', async (req, res) => {
     res.json(healthData);
   } catch (err) {
     console.error('Health check error:', err);
-    res.status(500).json({
-      status: 'error',
+    res.status(500).json({ 
+      status: 'error', 
       error: err.message,
       timestamp: new Date().toISOString()
     });
@@ -148,7 +140,7 @@ app.get('/health', async (req, res) => {
 app.get('/api/deliveries', async (req, res) => {
   try {
     const date = req.query.date || new Date().toISOString().split('T')[0];
-
+    
     // Get all deliveries from database
     const [deliveries] = await pool.execute(`
       SELECT 
@@ -224,7 +216,7 @@ app.get('/api/deliveries/all', async (req, res) => {
   try {
     let deliveries = [];
     let products = [];
-
+    
     try {
       // Try to get data from database
       const [deliveryRows] = await pool.execute(`
@@ -246,9 +238,9 @@ app.get('/api/deliveries/all', async (req, res) => {
         FROM legacy_deliveries
         ORDER BY delivernum DESC
       `);
-
+      
       deliveries = deliveryRows;
-
+      
       // Get products for all deliveries
       const deliveryIds = deliveries.map(d => d.id);
       if (deliveryIds.length > 0) {
@@ -267,10 +259,10 @@ app.get('/api/deliveries/all', async (req, res) => {
         `, deliveryIds);
         products = productRows;
       }
-
+      
     } catch (dbError) {
       console.log('Database query failed, using sample data:', dbError.message);
-
+      
       // Fallback to sample data
       deliveries = [
         {
@@ -319,7 +311,7 @@ app.get('/api/deliveries/all', async (req, res) => {
           previous_purchases: 2
         }
       ];
-
+      
       products = [
         {
           delivernum: '0000170001',
@@ -395,9 +387,9 @@ app.use((err, req, res, next) => {
   console.error('Request URL:', req.url);
   console.error('Request method:', req.method);
   console.error('=====================');
-
+  
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
-    res.status(500).json({
+    res.status(500).json({ 
       error: 'Internal Server Error',
       message: err.message,
       stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
@@ -427,10 +419,10 @@ async function bootstrap() {
     console.log('📊 Initializing database tables...');
     await ensureLegacyTables(pool);
     await ensureAuthTables(pool);
-
+    
     console.log('🔄 Running database migrations...');
     await migrateAddNewFields(pool);
-
+    
     console.log('🌱 Seeding option tables...');
     const optionSeedResults = await seedOptionTablesFromDbf(pool, console);
     optionSeedResults.forEach((result) => {
@@ -441,7 +433,7 @@ async function bootstrap() {
         console.log(`Seeded ${result.tableName} with ${result.inserted} records`);
       }
     });
-
+    
     console.log('✅ Database initialization completed');
   } catch (error) {
     console.error('❌ Database initialization failed:', error.message);
