@@ -301,8 +301,7 @@
       }
       tableBody.innerHTML = state.filtered
         .map((item) => {
-          const rawName = [item.firstname, item.lastname].filter(Boolean).join(' ');
-          const fullName = rawName ? `คุณ ${rawName}` : '-';
+          const fullName = [item.firstname, item.lastname].filter(Boolean).join(' ') || '-';
           const phone = item.mobiletel || '-';
           const checked = state.selectedId && String(state.selectedId) === String(item.id) ? 'checked' : '';
           return `
@@ -404,8 +403,7 @@
         if (id) {
           nextBtn.removeAttribute('disabled');
           const picked = state.customers.find((item) => String(item.id) === String(id));
-          const rawName = picked ? [picked.firstname, picked.lastname].filter(Boolean).join(' ') : '';
-          const fullName = rawName ? `คุณ ${rawName}` : '';
+          const fullName = picked ? [picked.firstname, picked.lastname].filter(Boolean).join(' ') : '';
           setSummary(fullName ? `เลือกลูกค้า: ${fullName}` : `เลือกรายการ #${id}`, 'success');
         } else {
           nextBtn.setAttribute('disabled', 'disabled');
