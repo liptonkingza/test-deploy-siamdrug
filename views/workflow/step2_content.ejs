@@ -130,20 +130,12 @@
           <div class="col-12 col-md-3">
             <div class="row g-2">
               <div class="col-4">
-                <label class="form-label">ซอย</label>
+                <label class="form-label">ซอย  ถนน</label>
               </div>
               <div class="col-8">
-                <input type="text" name="soi1" class="form-control" maxlength="100">
-              </div>
-            </div>
-          </div>
-          <div class="col-12 col-md-3">
-            <div class="row g-2">
-              <div class="col-4">
-                <label class="form-label">ถนน</label>
-              </div>
-              <div class="col-8">
-                <input type="text" name="road1" class="form-control" maxlength="100">
+                <textarea name="soi_road_combined" class="form-control" rows="2" maxlength="200" placeholder="บรรทัดที่ 1: ซอย, บรรทัดที่ 2: ถนน"></textarea>
+                <input type="hidden" name="soi1">
+                <input type="hidden" name="road1">
               </div>
             </div>
           </div>
@@ -563,6 +555,17 @@
       if (addressCombinedField) {
         addressCombinedField.value = combinedAddress;
       }
+
+      // Handle combined soi/road display field
+      const soiRoadField = form.querySelector('[name="soi_road_combined"]');
+      if (soiRoadField) {
+        const soiVal = record.soi1 || record.soi || '';
+        const roadVal = record.road1 || record.road || '';
+        const linesSR = [];
+        if (soiVal) linesSR.push(soiVal);
+        if (roadVal) linesSR.push(roadVal);
+        soiRoadField.value = linesSR.join('\n');
+      }
       
       // Populate all form fields including customer data
       Object.keys(record).forEach((key) => {
@@ -773,12 +776,23 @@
             addr3Field.value = lines[1] || '';
           }
 
+          // Handle combined soi/road field - split into soi1 and road1
+          const soiRoadField = form.querySelector('[name="soi_road_combined"]');
+          const soiField = form.querySelector('[name="soi1"]');
+          const roadField = form.querySelector('[name="road1"]');
+          if (soiRoadField && soiField && roadField) {
+            const combinedSoiRoad = soiRoadField.value.trim();
+            const linesSR = combinedSoiRoad.split('\n');
+            soiField.value = linesSR[0] || '';
+            roadField.value = linesSR[1] || '';
+          }
+
           const formData = new FormData(form);
           const payload = {};
           Array.from(form.elements).forEach((el) => {
             if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement)) return;
             const name = el.name;
-            if (!name || name === 'id' || name === 'address_combined') return;
+            if (!name || name === 'id' || name === 'address_combined' || name === 'soi_road_combined') return;
             const value = formData.get(name);
             if (value == null) return;
             const trimmed = typeof value === 'string' ? value.trim() : value;
@@ -866,12 +880,23 @@
         addr3Field.value = lines[1] || '';
       }
 
+      // Handle combined soi/road field - split into soi1 and road1
+      const soiRoadField = form.querySelector('[name="soi_road_combined"]');
+      const soiField = form.querySelector('[name="soi1"]');
+      const roadField = form.querySelector('[name="road1"]');
+      if (soiRoadField && soiField && roadField) {
+        const combinedSoiRoad = soiRoadField.value.trim();
+        const linesSR = combinedSoiRoad.split('\n');
+        soiField.value = linesSR[0] || '';
+        roadField.value = linesSR[1] || '';
+      }
+
       const formData = new FormData(form);
       const payload = {};
       Array.from(form.elements).forEach((el) => {
         if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement)) return;
         const name = el.name;
-        if (!name || name === 'id' || name === 'address_combined') return;
+        if (!name || name === 'id' || name === 'address_combined' || name === 'soi_road_combined') return;
         const value = formData.get(name);
         if (value == null) return;
         const trimmed = typeof value === 'string' ? value.trim() : value;
