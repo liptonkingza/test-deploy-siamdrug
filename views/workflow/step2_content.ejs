@@ -293,6 +293,13 @@
 
 
 
+    function formatNameWithKhun(name) {
+      if (!name) return '';
+      const trimmed = String(name).trim();
+      if (!trimmed) return '';
+      return trimmed.startsWith('คุณ') ? trimmed : `คุณ ${trimmed}`;
+    }
+
     function setSummary(text, variant) {
       if (!summaryEl) return;
       summaryEl.textContent = text;
@@ -354,7 +361,8 @@
       const selectedDelivery = state.selectedId ? getCombinedList().find((d) => String(d.id) === String(state.selectedId)) : null;
       
       const c = state.customer;
-      let fullName = [c.firstname, c.lastname].filter(Boolean).join(' ') || '(ไม่ระบุชื่อ)';
+      const fallbackName = '(ไม่ระบุชื่อ)';
+      let fullNameRaw = [c.firstname, c.lastname].filter(Boolean).join(' ') || fallbackName;
       let phone = c.mobiletel || '-';
       let address = [c.addr1, c.addr2, c.addr3, c.addr4, c.addr5].filter(Boolean).join('<br>') || '-';
       
@@ -362,7 +370,7 @@
       if (selectedDelivery) {
         // Update recipient name if available
         if (selectedDelivery.deliverto) {
-          fullName = selectedDelivery.deliverto;
+          fullNameRaw = selectedDelivery.deliverto;
         }
         
         // Update phone if available
@@ -392,7 +400,9 @@
       
       // Show customer data vs delivery data separately
       const customerAddress = [c.addr1, c.addr2, c.addr3, c.addr4, c.addr5].filter(Boolean).join('<br>') || '-';
-      const customerName = [c.firstname, c.lastname].filter(Boolean).join(' ') || '(ไม่ระบุชื่อ)';
+      const customerNameRaw = [c.firstname, c.lastname].filter(Boolean).join(' ') || fallbackName;
+      const customerName = customerNameRaw === fallbackName ? fallbackName : formatNameWithKhun(customerNameRaw);
+      const fullName = fullNameRaw === fallbackName ? fallbackName : formatNameWithKhun(fullNameRaw);
       const customerPhone = c.mobiletel || '-';
       
       preview.innerHTML = `
@@ -429,7 +439,7 @@
       tableBody.innerHTML = list.map((item) => {
         const date = item.day || item.workdate || '-';
         const time = item.timein || '-';
-        const recipient = item.deliverto || '-';
+        const recipient = item.deliverto ? formatNameWithKhun(item.deliverto) : '-';
         // Prefer address-only fields; avoid using name (addr1)
         const address = (item.addr2 && String(item.addr2).trim()) ? item.addr2
           : (item.addr3 && String(item.addr3).trim()) ? item.addr3
