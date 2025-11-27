@@ -402,7 +402,12 @@
         const raw = sessionStorage.getItem('workflow.selectedDelivery');
         if (raw) {
           const parsed = JSON.parse(raw);
-          return parsed.delivery?.data || {};
+          const result = parsed.delivery?.data || {};
+          // เพิ่ม formattedAddress ถ้ามี (ข้อมูลที่อยู่ที่จัดรูปแบบแล้วจาก step 2)
+          if (parsed.delivery?.formattedAddress) {
+            result.formattedAddress = parsed.delivery.formattedAddress;
+          }
+          return result;
         }
       } catch (e) {
         console.warn('Could not parse delivery data from session');

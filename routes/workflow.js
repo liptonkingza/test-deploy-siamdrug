@@ -812,13 +812,19 @@ router.post('/api/save-workflow', async (req, res, next) => {
       apptperson: deliveryData.deliverto || '', // ชื่อผู้รับ จาก step 2
       appttel: deliveryData.appttel || '', // โทรศัพท์ จาก step 2
       apptaddr: (() => {
+        // ใช้ข้อมูลที่จัดรูปแบบแล้วจาก step 2 (มี ซ., ถ., ตำบล, อำเภอ) ถ้ามี
+        // ข้อมูลนี้ถูกเก็บใน sessionStorage เมื่อเลือก delivery ใน step 2
+        if (deliveryData && deliveryData.formattedAddress) {
+          return deliveryData.formattedAddress;
+        }
+        // Fallback: ถ้าไม่มีข้อมูลที่จัดรูปแบบแล้ว ให้ใช้วิธีเดิม
         const parts = [];
         if (deliveryData.addr2) parts.push(deliveryData.addr2); // ที่อยู่บรรทัดหลัก
         if (deliveryData.addr3) parts.push(deliveryData.addr3); // ที่อยู่บรรทัดเพิ่มเติม
         if (deliveryData.province1) parts.push(deliveryData.province1); // จังหวัด
         if (deliveryData.zipcode1) parts.push(deliveryData.zipcode1); // รหัสไปรษณีย์
         return parts.join(' ');
-      })(), // ที่อยู่บรรทัดหลัก + ที่อยู่บรรทัดเพิ่มเติม + จังหวัด + รหัสไปรษณีย์ จาก step 2
+      })(), // ที่อยู่ที่จัดรูปแบบแล้ว (มี ซ., ถ., ตำบล, อำเภอ) จาก step 2
       apptaddr1: (() => {
         const parts = [];
         if (deliveryData.homenum1) parts.push(deliveryData.homenum1); // บ้านเลขที่

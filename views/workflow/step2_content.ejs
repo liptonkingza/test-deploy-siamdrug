@@ -265,18 +265,37 @@
       return 'saved';
     }
 
+    function formatAddressForSave(deliveryData) {
+      const addressParts = [];
+      if (deliveryData.addr2) addressParts.push(deliveryData.addr2);
+      if (deliveryData.addr3) addressParts.push(deliveryData.addr3);
+      if (deliveryData.homenum1 || deliveryData.homenum) addressParts.push(deliveryData.homenum1 || deliveryData.homenum);
+      if (deliveryData.mooban1 || deliveryData.moo) addressParts.push(deliveryData.mooban1 || deliveryData.moo);
+      if (deliveryData.building1 || deliveryData.building) addressParts.push(deliveryData.building1 || deliveryData.building);
+      if (deliveryData.soi1 || deliveryData.soi) addressParts.push('ซ. ' + (deliveryData.soi1 || deliveryData.soi) + ',');
+      if (deliveryData.road1 || deliveryData.road) addressParts.push('ถ. ' + (deliveryData.road1 || deliveryData.road) + ' ');
+      if (deliveryData.kwang1 || deliveryData.kwang) addressParts.push('ตำบล ' + (deliveryData.kwang1 || deliveryData.kwang) + ',');
+      if (deliveryData.kate1 || deliveryData.kate) addressParts.push('อำเภอ ' + (deliveryData.kate1 || deliveryData.kate));
+      if (deliveryData.province1 || deliveryData.province) addressParts.push(deliveryData.province1 || deliveryData.province);
+      if (deliveryData.zipcode1 || deliveryData.zipcode) addressParts.push(deliveryData.zipcode1 || deliveryData.zipcode);
+      return addressParts.join(' ');
+    }
+
     function persistSelectedDeliverySelection(item) {
       if (!item) {
         sessionStorage.removeItem(storageKeySelectedDelivery);
         storedDeliverySelection = null;
         return;
       }
+      const deliveryDataCopy = JSON.parse(JSON.stringify(item));
+      const formattedAddress = formatAddressForSave(deliveryDataCopy);
       const payload = {
         customerId,
         delivery: {
           id: item.id,
           source: determineSelectionSource(item),
-          data: JSON.parse(JSON.stringify(item)),
+          data: deliveryDataCopy,
+          formattedAddress: formattedAddress, // เก็บที่อยู่ที่จัดรูปแบบแล้ว
         },
       };
       storedDeliverySelection = payload;
