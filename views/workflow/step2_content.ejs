@@ -371,19 +371,19 @@
         }
         
         // Update address if available - prioritize delivery address fields (exclude addr1 which is name)
-        const deliveryAddress = [
-          selectedDelivery.addr2, 
-          selectedDelivery.addr3,
-          selectedDelivery.homenum1,
-          selectedDelivery.mooban1,
-          selectedDelivery.building1,
-          selectedDelivery.soi1,
-          selectedDelivery.road1,
-          selectedDelivery.kwang1,
-          selectedDelivery.kate1,
-          selectedDelivery.province1,
-          selectedDelivery.zipcode1
-        ].filter(Boolean).join('<br>');
+        const addressParts = [];
+        if (selectedDelivery.addr2) addressParts.push(selectedDelivery.addr2);
+        if (selectedDelivery.addr3) addressParts.push(selectedDelivery.addr3);
+        if (selectedDelivery.homenum1) addressParts.push(selectedDelivery.homenum1);
+        if (selectedDelivery.mooban1) addressParts.push(selectedDelivery.mooban1);
+        if (selectedDelivery.building1) addressParts.push(selectedDelivery.building1);
+        if (selectedDelivery.soi1) addressParts.push('ซ. ' + selectedDelivery.soi1 + ',');
+        if (selectedDelivery.road1) addressParts.push('ถ. ' + selectedDelivery.road1 + ' ');
+        if (selectedDelivery.kwang1) addressParts.push('ตำบล ' + selectedDelivery.kwang1 + ',');
+        if (selectedDelivery.kate1) addressParts.push('อำเภอ ' + selectedDelivery.kate1);
+        if (selectedDelivery.province1) addressParts.push(selectedDelivery.province1);
+        if (selectedDelivery.zipcode1) addressParts.push(selectedDelivery.zipcode1);
+        const deliveryAddress = addressParts.join('<br>');
         
         if (deliveryAddress) {
           address = deliveryAddress;
@@ -435,17 +435,19 @@
         // Prefer address-only fields; avoid using name (addr1)
         const address = (item.addr2 && String(item.addr2).trim()) ? item.addr2
           : (item.addr3 && String(item.addr3).trim()) ? item.addr3
-          : [
-              item.homenum1 || item.homenum,
-              item.mooban1 || item.moo,
-              item.building1 || item.building,
-              item.road1 || item.road,
-              item.soi1 || item.soi,
-              item.kwang1 || item.kwang,
-              item.kate1 || item.kate,
-              item.province1 || item.province,
-              item.zipcode1 || item.zipcode
-            ].filter(Boolean).join(' ') || '-';
+          : (() => {
+              const addressParts = [];
+              if (item.homenum1 || item.homenum) addressParts.push(item.homenum1 || item.homenum);
+              if (item.mooban1 || item.moo) addressParts.push(item.mooban1 || item.moo);
+              if (item.building1 || item.building) addressParts.push(item.building1 || item.building);
+              if (item.soi1 || item.soi) addressParts.push('ซ. ' + (item.soi1 || item.soi) + ',');
+              if (item.road1 || item.road) addressParts.push('ถ. ' + (item.road1 || item.road) + ' ');
+              if (item.kwang1 || item.kwang) addressParts.push('ตำบล ' + (item.kwang1 || item.kwang) + ',');
+              if (item.kate1 || item.kate) addressParts.push('อำเภอ ' + (item.kate1 || item.kate));
+              if (item.province1 || item.province) addressParts.push(item.province1 || item.province);
+              if (item.zipcode1 || item.zipcode) addressParts.push(item.zipcode1 || item.zipcode);
+              return addressParts.length > 0 ? addressParts.join(' ') : '-';
+            })();
         const checked = state.selectedId && String(state.selectedId) === String(item.id) ? 'checked' : '';
         const badge = item.isDraft ? '<span class="badge text-bg-warning ms-2">ร่าง</span>' : '';
         const actions = `<div class="btn-group btn-group-sm">
